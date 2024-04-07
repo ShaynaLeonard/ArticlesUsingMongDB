@@ -5,6 +5,7 @@ const Review  = require ('../models/review')
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types; // Import ObjectId from mongoose
 
+
 const router = new express.Router()
 
 // name: CreateArticle
@@ -145,6 +146,104 @@ const getArticles = async (req, res) => {
 
 // Route handler to get all articles
 router.get('/articles', getArticles);
+
+// // name: deleteReviewFromArticle
+// // description: deletes a review from an article
+// // parameters: Article_id (string), reviewId (string)
+// // return value: appropriate status and message
+// const deleteReviewFromArticle = async (articleId, reviewId) => {
+//     try {
+//         // Find the article by its ID
+//         const article = await Article.findOne({ articleId });
+
+//         // Check if the article exists
+//         if (!article) {
+//             return { status: 404, message: 'Article not found' };
+//         }
+
+//         console.log("reviewId, ", reviewId)
+
+//         // Log the _id of every review in the article
+//         console.log('Reviews in the article:');
+//         article.reviews.forEach(review => console.log(review._id));
+
+
+//         // Find the index of the review in the article's reviews array
+//         const index = article.reviews.findIndex(review => review._id === reviewId);
+
+//         // Check if the review exists in the article
+//         if (index === -1) {
+//             return { status: 404, message: 'Review not found in the article' };
+//         }
+
+//         // Remove the review from the reviews array
+//         article.reviews.splice(index, 1);
+
+//         // Save the updated article
+//         await article.save();
+
+//         return { status: 200, message: 'Review deleted successfully' };
+//     } catch (error) {
+//         return { status: 500, message: 'Internal server error' };
+//     }
+// };
+
+const deleteReviewFromArticle = async (articleId, reviewId) => {
+    try {
+        // Find the article by its ID
+        const article = await Article.findOne({ articleId });
+
+        // Check if the article exists
+        if (!article) {
+            return { status: 404, message: 'Article not found' };
+        }
+
+        // Log the _id of every review in the article
+        console.log('Reviews in the article:');
+        article.reviews.forEach(review => console.log(review._id));
+
+        // Convert reviewId to ObjectId
+        const reviewObjectId = ObjectId(reviewId);
+
+        // Find the index of the review in the article's reviews array
+        const index = article.reviews.findIndex(review => review._id.equals(reviewObjectId));
+
+        // Check if the review exists in the article
+        if (index === -1) {
+            return { status: 404, message: 'Review not found in the article' };
+        }
+
+        // Remove the review from the reviews array
+        article.reviews.splice(index, 1);
+
+        // Save the updated article
+        await article.save();
+
+        return { status: 200, message: 'Review deleted successfully' };
+    } catch (error) {
+        return { status: 500, message: 'Internal server error' };
+    }
+};
+
+// Route handler to delete a review from an article
+router.delete('/articles/:articleId/reviews/:reviewId', async (req, res) => {
+    const { articleId, reviewId } = req.params;
+
+    try {
+        const result = await deleteReviewFromArticle(articleId, reviewId);
+
+        // Check the status returned by the function and send appropriate response
+        if (result.status === 200) {
+            res.status(200).send({ message: result.message });
+        } else if (result.status === 404) {
+            res.status(404).send({ error: result.message });
+        } else {
+            res.status(500).send({ error: result.message });
+        }
+    } catch (error) {
+        res.status(500).send({ error: 'Internal server error' });
+    }
+});
 
 module.exports = router
 
