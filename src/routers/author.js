@@ -4,7 +4,7 @@ const router = new express.Router()
 
 // name:  createAuthor 
 // description: Function to create an author
-// parameters received: in the body are the details required to make an author 
+// parameters received: in the body are the details required to make an author (name, email, cellphone number and house number)
 // parameters returned: appropriate status and/or message if input is incorrect 
 const CreateAuthor = async (req, res) => {
     // Check if an author with the same email already exists
